@@ -1,0 +1,7 @@
+Origin: ytdownloader-repo
+Label: ytdownloader
+Suite: stable
+Codename: stable
+Architectures: all
+Components: main
+Description: YtDownloader Repository
