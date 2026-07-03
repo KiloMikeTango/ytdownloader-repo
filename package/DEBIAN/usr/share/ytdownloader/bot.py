@@ -5,7 +5,7 @@ import requests
 from dotenv import load_dotenv
 
 # Your Cloudflare Worker URL
-WORKER_URL = "https://your-worker-api.workers.dev"
+WORKER_URL = "https://yt-auth.thuk6810.workers.dev/"
 
 # Setup bot
 load_dotenv()
