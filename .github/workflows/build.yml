@@ -1,4 +1,5 @@
-name: Build DEB Package
+name: Build and Deploy
+
 on: [push]
 
 permissions:
@@ -9,12 +10,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Build Package
         run: |
+          # 1. Setup build directory
           mkdir -p build/dists/stable/main/binary-all
+          
+          # 2. Build the debian package
+          # Assumes your files are in a folder named 'package' in the root
           dpkg-deb --build package build/dists/stable/main/binary-all/ytdownloader_1.0.0_all.deb
-          cd build/dists/stable/main/binary-all
-          dpkg-scanpackages . | gzip -c > Packages.gz
+          
+          # 3. Create Package Index
+          cd build/dists/stable/main
+          dpkg-scanpackages binary-all/ | gzip -c > binary-all/Packages.gz
+          
+          # 4. Create Release File (Required for apt)
+          echo "Origin: ytdownloader-repo" > Release
+          echo "Label: ytdownloader" >> Release
+          echo "Suite: stable" >> Release
+          echo "Codename: stable" >> Release
+          echo "Architectures: all" >> Release
+          echo "Components: main" >> Release
+          echo "Description: YtDownloader Repository" >> Release
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
