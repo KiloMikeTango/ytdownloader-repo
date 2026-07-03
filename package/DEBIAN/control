@@ -1,0 +1,8 @@
+Package: ytdownloader
+Version: 1.0.0
+Section: misc
+Priority: optional
+Architecture: all
+Depends: python, git
+Maintainer: Kaung Myat Thu <thuk6810@gmail.com>
+Description: HD Youtube Downloader for Termux.
