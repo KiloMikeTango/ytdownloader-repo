@@ -4,10 +4,10 @@ Architecture: all
 Maintainer: Kaung Myat Thu <thuk6810@gmail.com>
 Depends: python, git
 Filename: binary-all/ytdownloader_1.0.0_all.deb
-Size: 1626
-MD5sum: 4fd5757bc9fb066cae49f304e8b63c58
-SHA1: 8837abd6b948bf0deef46907a7a4bdaed4134bb0
-SHA256: 974a73a8b1e92b735201ac8c4357df8a4c542f2c704675431bbdc52e48f506a4
+Size: 1624
+MD5sum: 48bb5f00a52f4593c5c3e3dc4cfa32e9
+SHA1: ef5119ae70d29af34e70a0769090aabd8cbdb323
+SHA256: 9eca31308b850b96301cc43ccb7b5e71c2072db2de33944cdd01a14e20f81a9c
 Section: misc
 Priority: optional
 Description: HD Youtube Downloader for Termux.
