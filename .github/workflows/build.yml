@@ -1,16 +1,34 @@
-- name: Build and Index Package
+name: Build and Deploy
+
+on: [push]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and Index Package
         run: |
-          # Create the structure that apt expects: dists/stable/main/...
+          # 1. Install required Debian packaging tools
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev
+
+          # 2. Setup directory structure: dists/stable/main/binary-all
+          # 'dists/' is required by apt for repository indexing
           mkdir -p build/dists/stable/main/binary-all
           
-          # Build
+          # 3. Build the .deb package from the 'package' folder
           dpkg-deb --build package build/dists/stable/main/binary-all/ytdownloader_1.0.0_all.deb
           
-          # Index
+          # 4. Generate the Packages index file
           cd build/dists/stable/main
           dpkg-scanpackages binary-all/ | gzip -c > binary-all/Packages.gz
           
-          # Release
+          # 5. Create the Release file for repository metadata
           echo "Origin: ytdownloader-repo" > Release
           echo "Label: ytdownloader" >> Release
           echo "Suite: stable" >> Release
@@ -19,6 +37,13 @@
           echo "Components: main" >> Release
           echo "Description: YtDownloader Repository" >> Release
           
-          # Copy install script to root of build
+          # 6. Copy install.sh to the root of the build folder
+          # This ensures it is accessible at https://kilomiketango.github.io/ytdownloader-repo/install.sh
           cd ../../../..
           cp install.sh build/install.sh
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
