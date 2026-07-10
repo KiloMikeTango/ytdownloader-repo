@@ -13,18 +13,17 @@ jobs:
 
       - name: Build and Index Package
         run: |
-          # 1. Create the exact folder structure needed for your URL
+          # 1. Create the structure
           mkdir -p build/stable/main/binary-all
           
           # 2. Build the debian package
-          # Assumes you have a folder named 'package' in your repo root
           dpkg-deb --build package build/stable/main/binary-all/ytdownloader_1.0.0_all.deb
           
           # 3. Generate the Package Index
           cd build/stable/main
           dpkg-scanpackages binary-all/ | gzip -c > binary-all/Packages.gz
           
-          # 4. Create the Release file (Crucial for apt to recognize the repo)
+          # 4. Create the Release file
           echo "Origin: ytdownloader-repo" > Release
           echo "Label: ytdownloader" >> Release
           echo "Suite: stable" >> Release
@@ -32,6 +31,11 @@ jobs:
           echo "Architectures: all" >> Release
           echo "Components: main" >> Release
           echo "Description: YtDownloader Repository" >> Release
+          
+          # 5. COPY THE INSTALL SCRIPT INTO THE BUILD FOLDER
+          # This moves install.sh from your repo root into the root of the 'build' folder
+          cd ../../..
+          cp install.sh build/install.sh
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
