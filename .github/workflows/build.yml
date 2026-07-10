@@ -13,12 +13,22 @@ jobs:
 
       - name: Build and Index Package
         run: |
+          # 1. Ensure required tools are installed
           sudo apt-get update && sudo apt-get install -y dpkg-dev
+          
+          # 2. Setup the standard Debian repository directory structure
           mkdir -p build/dists/stable/main/binary-all
+          
+          # 3. Build the .deb package
           dpkg-deb --build package build/dists/stable/main/binary-all/ytdownloader_1.0.0_all.deb
+          
+          # 4. Generate the Packages index
           cd build/dists/stable/main
           dpkg-scanpackages binary-all/ > Packages
           gzip -c Packages > binary-all/Packages.gz
+          
+          # 5. Create the Release metadata file
+          # The Release file must sit in dists/stable/
           cd ../..
           echo "Origin: ytdownloader-repo" > Release
           echo "Label: ytdownloader" >> Release
@@ -27,8 +37,10 @@ jobs:
           echo "Architectures: all" >> Release
           echo "Components: main" >> Release
           echo "Description: YtDownloader Repository" >> Release
-          cd ../../..
-          cp install.sh build/install.sh
+          
+          # 6. Copy the install script using the absolute path
+          # GITHUB_WORKSPACE is the root of your repo
+          cp "${GITHUB_WORKSPACE}/install.sh" "${GITHUB_WORKSPACE}/build/install.sh"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
