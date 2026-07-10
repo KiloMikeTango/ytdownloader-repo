@@ -1,16 +1,16 @@
 - name: Build and Index Package
         run: |
-          # 1. Create the path including 'dists/'
+          # Create the structure that apt expects: dists/stable/main/...
           mkdir -p build/dists/stable/main/binary-all
           
-          # 2. Build the debian package
+          # Build
           dpkg-deb --build package build/dists/stable/main/binary-all/ytdownloader_1.0.0_all.deb
           
-          # 3. Generate the Package Index inside 'dists/'
+          # Index
           cd build/dists/stable/main
           dpkg-scanpackages binary-all/ | gzip -c > binary-all/Packages.gz
           
-          # 4. Create the Release file inside 'dists/'
+          # Release
           echo "Origin: ytdownloader-repo" > Release
           echo "Label: ytdownloader" >> Release
           echo "Suite: stable" >> Release
@@ -19,6 +19,6 @@
           echo "Components: main" >> Release
           echo "Description: YtDownloader Repository" >> Release
           
-          # 5. Copy the install script to the root (outside of dists)
-          cd ../../..
+          # Copy install script to root of build
+          cd ../../../..
           cp install.sh build/install.sh
