@@ -1,29 +1,16 @@
-name: Build and Deploy
-
-on: [push]
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build and Index Package
+- name: Build and Index Package
         run: |
-          # 1. Create the structure
-          mkdir -p build/stable/main/binary-all
+          # 1. Create the path including 'dists/'
+          mkdir -p build/dists/stable/main/binary-all
           
           # 2. Build the debian package
-          dpkg-deb --build package build/stable/main/binary-all/ytdownloader_1.0.0_all.deb
+          dpkg-deb --build package build/dists/stable/main/binary-all/ytdownloader_1.0.0_all.deb
           
-          # 3. Generate the Package Index
-          cd build/stable/main
+          # 3. Generate the Package Index inside 'dists/'
+          cd build/dists/stable/main
           dpkg-scanpackages binary-all/ | gzip -c > binary-all/Packages.gz
           
-          # 4. Create the Release file
+          # 4. Create the Release file inside 'dists/'
           echo "Origin: ytdownloader-repo" > Release
           echo "Label: ytdownloader" >> Release
           echo "Suite: stable" >> Release
@@ -32,13 +19,6 @@ jobs:
           echo "Components: main" >> Release
           echo "Description: YtDownloader Repository" >> Release
           
-          # 5. COPY THE INSTALL SCRIPT INTO THE BUILD FOLDER
-          # This moves install.sh from your repo root into the root of the 'build' folder
+          # 5. Copy the install script to the root (outside of dists)
           cd ../../..
           cp install.sh build/install.sh
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
