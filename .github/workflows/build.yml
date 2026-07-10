@@ -1,6 +1,7 @@
 name: Build and Deploy
 
-on: [push]
+on:
+  push:
 
 permissions:
   contents: write
@@ -8,39 +9,52 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Build and Index Package
         run: |
-          # 1. Ensure required tools are installed
-          sudo apt-get update && sudo apt-get install -y dpkg-dev
-          
-          # 2. Setup the standard Debian repository directory structure
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev
+
           mkdir -p build/dists/stable/main/binary-all
-          
-          # 3. Build the .deb package
-          dpkg-deb --build package build/dists/stable/main/binary-all/ytdownloader_1.0.0_all.deb
-          
-          # 4. Generate the Packages index
+
+          dpkg-deb --build package \
+            build/dists/stable/main/binary-all/ytdownloader_1.0.0_all.deb
+
           cd build/dists/stable/main
-          dpkg-scanpackages binary-all/ > Packages
-          gzip -c Packages > binary-all/Packages.gz
-          
-          # 5. Create the Release metadata file
-          # The Release file must sit in dists/stable/
-          cd ../..
-          echo "Origin: ytdownloader-repo" > Release
-          echo "Label: ytdownloader" >> Release
-          echo "Suite: stable" >> Release
-          echo "Codename: stable" >> Release
-          echo "Architectures: all" >> Release
-          echo "Components: main" >> Release
-          echo "Description: YtDownloader Repository" >> Release
-          
-          # 6. Copy the install script using the absolute path
-          # GITHUB_WORKSPACE is the root of your repo
-          cp "${GITHUB_WORKSPACE}/install.sh" "${GITHUB_WORKSPACE}/build/install.sh"
+
+          dpkg-scanpackages binary-all /dev/null > binary-all/Packages
+          gzip -kf binary-all/Packages
+
+          cd ..
+
+          {
+            echo "Origin: ytdownloader-repo"
+            echo "Label: ytdownloader"
+            echo "Suite: stable"
+            echo "Codename: stable"
+            echo "Architectures: all"
+            echo "Components: main"
+            echo "Description: YtDownloader Repository"
+            echo "Date: $(date -Ru)"
+            echo "MD5Sum:"
+            printf " %s %16d %s\n" \
+              "$(md5sum main/binary-all/Packages.gz | cut -d' ' -f1)" \
+              "$(stat -c%s main/binary-all/Packages.gz)" \
+              "main/binary-all/Packages.gz"
+
+            echo "SHA256:"
+            printf " %s %16d %s\n" \
+              "$(sha256sum main/binary-all/Packages.gz | cut -d' ' -f1)" \
+              "$(stat -c%s main/binary-all/Packages.gz)" \
+              "main/binary-all/Packages.gz"
+          } > Release
+
+          cd ../../..
+
+          cp install.sh build/install.sh
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
